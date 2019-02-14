@@ -11,19 +11,36 @@ namespace sette {
   }
 
   class ValueIter {
-    src: Token[] = [];
-    offset: number = 0;
-    index: number = 0;
-    next() { }
-    get isEnd() { return false; }
-    get toNumber() { return 0; }
+    next() {
+      if (this.isEnd) { return; }
+      const succ = this.cur.typ === LIST || this.cur.typ === TABLE ? this.cur.b : 1;
+      this.index += succ;
+    }
+
+    get isEnd() { return this.cur.b === -1; }
+    get toNumber() { return this.cur.a; }
+
+    get cur() {
+      return this.src[this.index];
+    }
+
+    constructor(
+      private src: Token[],
+      private index: number,
+    ) { }
   }
 
   class List {
     src: Token[] = [];
     offset: number = 0;
     get length() { return this.src[this.offset].a; }
-    get first() { return new ValueIter; }
+    get first() { return new ValueIter(this.src, this.offset + 1); }
+
+    *[Symbol.iterator]() {
+      for (let i = this.first; !i.isEnd; i.next()) {
+        yield i;
+      }
+    }
   }
 
   class PairIter {
@@ -32,12 +49,15 @@ namespace sette {
     index: number = 0;
     next() { }
     get key() { return ""; }
-    get first() { return new ValueIter; }
+    get first() { return new ValueIter(this.src, this.offset + 1); }
   }
 
   function hogehoge() {
     const root = new List;
     for (let i = root.first; !i.isEnd; i.next()) {
+      console.log(i.toNumber);
+    }
+    for (const i of root) {
       console.log(i.toNumber);
     }
   }
