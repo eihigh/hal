@@ -110,6 +110,9 @@ namespace sette {
    * internal
    */
 
+  type parseFn = (this: Parser) => parseFn;
+
+  const lbrack = '['.charCodeAt(0);
   const rbrack = ']'.charCodeAt(0);
 
   class Parser {
@@ -122,7 +125,26 @@ namespace sette {
       private src: string,
     ) { }
 
-    run() { }
+    run() {
+      let fn: parseFn | null = this.parseList;
+      while (fn !== null) {
+        fn = fn.call(this);
+      }
+    }
+
+    next() { this.offset++; }
+
+    parseValue() {
+      const cc = this.cc;
+      this.next();
+      switch (cc) {
+        case lbrack:
+          this.push();
+          this.tail.typ = LIST;
+          return this.parseList;
+      }
+      return null;
+    }
 
     parseList() {
       const start = this.offset;
@@ -130,6 +152,11 @@ namespace sette {
         this.tail.totalLength = this.offset - start;
         this.stack.pop();
       }
+      return this.parseList;
+    }
+
+    push() {
+      this.stack.push(this.offset);
     }
 
     get tail() {
