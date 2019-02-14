@@ -105,4 +105,36 @@ namespace sette {
       console.log(i);
     }
   }
+
+  /*
+   * internal
+   */
+
+  const rbrack = ']'.charCodeAt(0);
+
+  class Parser {
+    offset: number = 0;
+    stack: number[] = [];
+    items: Item[] = [];
+    cc: number = 0;
+
+    constructor(
+      private src: string,
+    ) { }
+
+    run() { }
+
+    parseList() {
+      const start = this.offset;
+      if (this.cc === rbrack) {
+        this.tail.totalLength = this.offset - start;
+        this.stack.pop();
+      }
+    }
+
+    get tail() {
+      const index = this.stack[0];
+      return this.items[index];
+    }
+  }
 }
